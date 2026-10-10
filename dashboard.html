@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate Dashboard</title>
+    <style>
+        /* --- 1. BASE & RESET --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: #1a1a1a; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+
+        /* --- 2. MAIN CONTAINER --- */
+        .dashboard {
+            background: #ffffff;
+            width: 100%;
+            max-width: 1400px;
+            height: 90vh;
+            border-radius: 20px;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        /* --- 3. TOP CONTROL BAR (THE 3 BUTTONS) --- */
+        .control-bar {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2d2d2d;
+            padding: 8px;
+            border-radius: 12px;
+            display: flex;
+            gap: 8px;
+            z-index: 100;
+        }
+        .control-btn {
+            background: transparent;
+            color: #aaa;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .control-btn:hover { background: #444; color: white; }
+        .control-btn.active { background: #0ea5e9; color: white; }
+
+        /* --- 4. LEFT SIDEBAR (FILTERS) --- */
+        .sidebar {
+            width: 260px;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            transition: margin-left 0.3s ease;
+        }
+        .sidebar.hidden { margin-left: -260px; }
+        
+        .filter-section h4 { font-size: 11px; text-transform: uppercase; color: #888; margin-bottom: 10px; letter-spacing: 0.5px;}
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn-grid button { padding: 8px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer; font-size: 12px; color: #555;}
+        .btn-grid button.active { background: #e0f2fe; border-color: #0ea5e9; color: #0369a1; font-weight: bold; }
+        
+        .apply-btn { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: auto; font-weight: bold; letter-spacing: 0.5px;}
+
+        /* --- 5. MIDDLE COLUMN (RESULTS) --- */
+        .results-list {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid #e0e0e0;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: flex 0.3s ease;
+        }
+        .results-list.hidden { display: none; }
+
+        .card {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .card:hover, .card.active { border-color: #0ea5e9; background: #f0f9ff; }
+        .card-img { width: 100px; height: 80px; background: #ddd; border-radius: 8px; object-fit: cover; }
+        .card-info h3 { font-size: 14px; margin-bottom: 4px; color: #333;}
+        .card-info p { font-size: 11px; color: #666; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;}
+        .card-specs { display: flex; gap: 8px; font-size: 11px; color: #444; margin-bottom: 6px;}
+        .card-price { font-weight: bold; font-size: 14px; color: #111; }
+
+        /* --- 6. RIGHT PANEL (DETAILS) --- */
+        .details-panel {
+            width: 320px;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #ffffff;
+            transition: margin-right 0.3s ease;
+        }
+        .details-panel.hidden { margin-right: -320px; }
+
+        .hero-image { width: 100%; height: 160px; border-radius: 12px; object-fit: cover; margin-bottom: 16px; }
+        .details-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .details-header h2 { font-size: 18px; color: #111; }
+        .rating { color: #f59e0b; font-weight: bold; font-size: 12px; background: #fef3c7; padding: 4px 8px; border-radius: 6px;}
+        
+        .pricing-row { display: flex; justify-content: space-between; background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 16px; font-size: 11px; }
+        .pricing-row div { text-align: center; color: #666;}
+        .pricing-row strong { display: block; font-size: 13px; color: #111; margin-top: 4px;}
+        
+        .details-panel h3 { font-size: 13px; color: #333; margin-bottom: 6px; }
+        .features-list { font-size: 12px; color: #555; line-height: 1.5; margin-bottom: 16px; padding-left: 14px;}
+        .features-list li { margin-bottom: 4px; }
+        
+        .contact-card { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid #eee; border-radius: 12px; }
+        .avatar { width: 35px; height: 35px; border-radius: 50%; background: #cbd5e1; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 12px;}
+        .contact-btn { margin-left: auto; padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px;}
+    </style>
+</head>
+<body>
+
+    <div class="dashboard">
+        <!-- THE THREE BUTTONS CONTROL BAR -->
+        <div class="control-bar">
+            <button class="control-btn active" onclick="togglePanel('sidebar', this)">Filters</button>
+            <button class="control-btn active" onclick="togglePanel('results', this)">Results</button>
+            <button class="control-btn active" onclick="togglePanel('details', this)">Details</button>
+        </div>
+
+        <!-- LEFT SIDEBAR -->
+        <aside id="sidebar" class="sidebar">
+            <div class="filter-section">
+                <h4>Property Type</h4>
+                <div class="btn-grid">
+                    <button class="active">House</button>
+                    <button>Apartment</button>
+                    <button>Commercial</button>
+                    <button>Landplot</button>
+                </div>
+            </div>
+            <div class="filter-section">
+                <h4>Location</h4>
+                <select style="width:100%; padding:8px; border-radius:6px; border:1px solid #ddd; font-size:12px;">
+                    <option>Oslo, Europe</option>
+                </select>
+            </div>
+            <div class="filter-section">
+                <h4>Price</h4>
+                <input type="range" min="0" max="5000" style="width:100%;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#666;">
+                    <span>$700</span><span>$5,000</span>
+                </div>
+            </div>
+            <button class="apply-btn">APPLY</button>
+        </aside>
+
+        <!-- MIDDLE COLUMN (RESULTS) -->
+        <main id="results" class="results-list">
+            <h3 style="font-size: 16px; margin-bottom: 10px;">Search results</h3>
+            
+            <div class="card active">
+                <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" class="card-img" alt="House">
+                <div class="card-info">
+                    <h3>Seaside Serenity Villa</h3>
+                    <p>📍 4300 E 60th St, Valley View</p>
+                    <div class="card-specs">3 Beds • 2 Baths</div>
+                    <div class="card-price">$1,250,000</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" class="card-img" alt="House">
+                <div class="card-info">
+                    <h3>Sand Studio</h3>
+                    <p>📍 4600 Willow Pkwy, Cleveland</p>
+                    <div class="card-specs">1 Bed • 1 Bath</div>
+                    <div class="card-price">$3,000,000</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- RIGHT PANEL (DETAILS) -->
+        <aside id="details" class="details-panel">
+            <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="hero-image" alt="Detail Hero">
+            
+            <div class="details-header">
+                <h2>Seaside Serenity Villa</h2>
+                <span class="rating">5.0 ★★★★★</span>
+            </div>
+
+            <div class="pricing-row">
+                <div>Monthly <strong>$60/hr</strong></div>
+                <div>Weekly <strong>$50/hr</strong></div>
+                <div>Daily <strong>$40/hr</strong></div>
+            </div>
+
+            <h3>Property details</h3>
+            <p style="font-size:12px; color:#555; margin-bottom:16px; line-height:1.5;">
+                Discover your own piece of paradise with the Seaside Serenity Villa. With an open floor plan and direct access to a pristine sandy beach.
+            </p>
+
+            <div class="contact-card">
+                <div class="avatar">N</div>
+                <div>
+                    <div style="font-weight:bold; font-size:13px; color:#111;">Nina Debrov</div>
+                    <div style="font-size:11px; color:#888;">Agent</div>
+                </div>
+                <button class="contact-btn">CONTACT</button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- JAVASCRIPT TO TOGGLE PANELS -->
+    <script>
+        function togglePanel(panelId, btn) {
+            const panel = document.getElementById(panelId);
+            const isHidden = panel.classList.contains('hidden');
+            
+            if (isHidden) {
+                panel.classList.remove('hidden');
+                btn.classList.add('active');
+            } else {
+                panel.classList.add('hidden');
+                btn.classList.remove('active');
+            }
+        }
+    </script>
+
+</body>
+</html>
