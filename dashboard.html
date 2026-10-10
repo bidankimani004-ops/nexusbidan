@@ -126,6 +126,31 @@
         .contact-card { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid #eee; border-radius: 12px; }
         .avatar { width: 35px; height: 35px; border-radius: 50%; background: #cbd5e1; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 12px;}
         .contact-btn { margin-left: auto; padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px;}
+        /* --- MOBILE RESPONSIVE FIX --- */
+@media (max-width: 768px) {
+    .dashboard {
+        flex-direction: column;
+        height: auto;
+        overflow: visible;
+    }
+    .control-bar {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        margin: 10px auto;
+        width: fit-content;
+    }
+    .sidebar, .results-list, .details-panel {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e0e0e0;
+        height: auto;
+    }
+    .sidebar.hidden, .results-list.hidden, .details-panel.hidden {
+        display: none;
+    }
+}
     </style>
 </head>
 <body>
